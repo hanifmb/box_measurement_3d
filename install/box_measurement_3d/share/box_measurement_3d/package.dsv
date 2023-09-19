@@ -1,9 +1,0 @@
-source;share/box_measurement_3d/hook/pythonpath.ps1
-source;share/box_measurement_3d/hook/pythonpath.dsv
-source;share/box_measurement_3d/hook/pythonpath.sh
-source;share/box_measurement_3d/hook/ament_prefix_path.ps1
-source;share/box_measurement_3d/hook/ament_prefix_path.dsv
-source;share/box_measurement_3d/hook/ament_prefix_path.sh
-source;../../build/box_measurement_3d/share/box_measurement_3d/hook/pythonpath_develop.ps1
-source;../../build/box_measurement_3d/share/box_measurement_3d/hook/pythonpath_develop.dsv
-source;../../build/box_measurement_3d/share/box_measurement_3d/hook/pythonpath_develop.sh

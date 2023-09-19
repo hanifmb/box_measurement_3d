@@ -1,1 +1,0 @@
-/home/batman/ws/src/box_measurement_3d/setup.py
