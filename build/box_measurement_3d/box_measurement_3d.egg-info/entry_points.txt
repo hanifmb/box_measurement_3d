@@ -1,0 +1,4 @@
+[console_scripts]
+box_measurement_3d_node = box_measurement_3d.box_measurement_3d_node:main
+send_pc = box_measurement_3d.send_pc:main
+

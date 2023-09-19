@@ -1,0 +1,14 @@
+package.xml
+setup.cfg
+setup.py
+box_measurement_3d/__init__.py
+box_measurement_3d/box_measurement_3d_node.py
+box_measurement_3d/send_pc.py
+box_measurement_3d.egg-info/PKG-INFO
+box_measurement_3d.egg-info/SOURCES.txt
+box_measurement_3d.egg-info/dependency_links.txt
+box_measurement_3d.egg-info/entry_points.txt
+box_measurement_3d.egg-info/requires.txt
+box_measurement_3d.egg-info/top_level.txt
+box_measurement_3d.egg-info/zip-safe
+resource/box_measurement_3d
