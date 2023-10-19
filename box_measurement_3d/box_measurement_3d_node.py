@@ -114,7 +114,7 @@ def handle_request(request, response):
   pointcloud_np = np.array(pointcloud.tolist())
   points_np = pointcloud_np[:, :3]
 
-  planes = seq_ransac(points_np)
+  planes = seq_ransac(points_np, threshold = 2)
   export_planes(points_np, planes) 
 
   red_plane = Plane([-0.003401960104850783, 0.007624634496218392, -0.9999651452006935, 0.032146114540822605]) # base plane
@@ -172,6 +172,7 @@ def handle_request(request, response):
     average_point_farther = np.mean(farther_plane_np, axis=0)
 
     distance = np.linalg.norm(average_point_closer - average_point_farther)
+    return distance
     print(distance)
 
   w = corner_mean(sorted_corner_x)

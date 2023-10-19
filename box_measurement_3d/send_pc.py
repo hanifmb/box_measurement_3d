@@ -7,7 +7,8 @@ from box_measurement_interface.srv import BoxDimensionsAndCorners
 
 def main(args=None):
 
-  ply_file_path = "/home/batman/Downloads/dataset_30/Depth/final_fraction.ply"
+  # ply_file_path = "/home/batman/Downloads/dataset_30/Depth/final_fraction.ply"
+  ply_file_path = "/home/batman/Downloads/pizza_box_dataset/pizza_box_0/pizza_box_0_more_trimmed.ply"
   with open(ply_file_path, 'rb') as file:
     ply_data = PlyData.read(file)
 
@@ -19,7 +20,7 @@ def main(args=None):
   # ros side now
   rclpy.init()
   node = rclpy.create_node('service_caller_node')
-  client = node.create_client(BoxDimensionsAndCorners, '/box_measurement_node/get_size')  # Replace with your service name
+  client = node.create_client(BoxDimensionsAndCorners, '/box_measurement_node/get_size') 
 
   while not client.wait_for_service(timeout_sec=1.0):
     node.get_logger().info('service not available, waiting again...')
