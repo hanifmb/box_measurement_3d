@@ -22,7 +22,7 @@ def fitPlane(three_points):
   return [normal[0], normal[1], normal[2], d]
 
 def seq_ransac(cloud, threshold=0.005, n_planes=5):
-  def ransac_plane_fit(points, n_iters):
+  def ransac_plane_fit(points, n_iters, curr_iter=0):
     best_plane = []
     best_inliers = []
     max_inliers = 0
@@ -33,6 +33,14 @@ def seq_ransac(cloud, threshold=0.005, n_planes=5):
       # plane = Plane(sample_points) # fit a plane 
       plane_coeff = fitPlane(sample_points)
       plane = Plane(plane_coeff)
+
+      red_plane = Plane([-0.003401960104850783, 0.007624634496218392, -0.9999651452006935, 0.032146114540822605]) # base plane
+      if curr_iter == 0:
+        if get_planes_angle(red_plane.normal, plane.normal) > 10:
+          continue
+      else:
+        if get_planes_angle(red_plane.normal, plane.normal) < 80:
+          continue
 
       distances = np.abs(np.dot(points - sample_points[0], plane.normal)) # calc distance
       inliers = np.where(distances < threshold)[0]
@@ -56,8 +64,8 @@ def seq_ransac(cloud, threshold=0.005, n_planes=5):
     # eps = (len(remaining_points) - num_inliers) / len(remaining_points)
     # N = round(np.log(1-p) / np.log(1-(1-eps)**s)) 
     # N = 1000 if N > 1000 else N
-    N = 1000
-    plane = ransac_plane_fit(remaining_points, N) # run ransac
+    N = 5000
+    plane = ransac_plane_fit(remaining_points, N, i) # run ransac
     # update the inlier to the global indices after removing
     local_points_indices = plane.inlier_indices.copy()
     plane.inlier_indices[:] = points_indices[local_points_indices]
@@ -115,38 +123,39 @@ def handle_request(request, response):
   points_np = pointcloud_np[:, :3]
 
   planes = seq_ransac(points_np, threshold = 2)
+
+  # add the calibrated base plane
+  red_plane = Plane([-0.003401960104850783, 0.007624634496218392, -0.9999651452006935, 0.032146114540822605]) 
+  planes.append(red_plane)
+
   export_planes(points_np, planes) 
+  ANGLE_THRESHOLD = 1.0
 
-  red_plane = Plane([-0.003401960104850783, 0.007624634496218392, -0.9999651452006935, 0.032146114540822605]) # base plane
-  # green_plane = Plane([0.9999861459093223, -0.0019003673037874186, -0.0049088281218811584, -0.29748315839140277])
-  # blue_plane = Plane([0.020923692537118403, 0.999780547287266, 0.001027792093321174, -0.936057456637583])
-
-  ANGLE_THRESHOLD = 5.0
-
-  # find plane pairs for the width and length side
+  # planes matching (combination 6C2)
   planes_pair = []
+  angles = []
   for i in range(len(planes)):
     for j in range(i + 1, len(planes)):
       # angle between box sides 
       angle = get_planes_angle(planes[i].normal, planes[j].normal)
-      if angle < ANGLE_THRESHOLD:
-        planes_pair.append((planes[i], planes[j]))
+      # accumulate angle and its corresponding plane pair
+      angles.append(angle)
+      planes_pair.append((planes[i], planes[j]))
 
-  if len(planes_pair) != 2: print("Side plane pair(s) is not found!"); return
+  # yx = zip(angles, planes_pair)
+  # ans = sorted(yx)
+  # print(list(ans))
+  print(angles)
 
-  # find the plane pair for top and bottom sides
-  top_plane = None
-  for plane in planes:
-    angle = get_planes_angle(plane.normal, red_plane.normal)
-    if angle < ANGLE_THRESHOLD:
-      top_plane = plane
+  # sort planes pair based on angles
+  sorted_planes_pair = [x for _, x in sorted(zip(angles, planes_pair))]
+  parallel_planes = sorted_planes_pair[:3]
 
-  if top_plane is None: print("Top plane pair is not found!"); return
-  planes_pair.append((top_plane, red_plane))
+  if len(parallel_planes) != 3: print("Plane pair(s) is not found!"); return
 
   # combinations of three
   corners = []
-  combinations = list(product(planes_pair[0], planes_pair[1], planes_pair[2]))
+  combinations = list(product(parallel_planes[0], parallel_planes[1], parallel_planes[2]))
   filtered_combinations = [combo for combo in combinations if len(set(combo)) == 3]
   for combo in filtered_combinations:
     corner = np.linalg.solve(np.array([combo[i].normal for i in range(3)]), -1*np.array([combo[i].d for i in range(3)]))
