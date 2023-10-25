@@ -39,7 +39,7 @@ def seq_ransac(cloud, threshold=0.005, n_planes=5):
         if get_planes_angle(red_plane.normal, plane.normal) > 10:
           continue
       else:
-        if get_planes_angle(red_plane.normal, plane.normal) < 80:
+        if get_planes_angle(red_plane.normal, plane.normal) < 85:
           continue
 
       distances = np.abs(np.dot(points - sample_points[0], plane.normal)) # calc distance
@@ -64,7 +64,7 @@ def seq_ransac(cloud, threshold=0.005, n_planes=5):
     # eps = (len(remaining_points) - num_inliers) / len(remaining_points)
     # N = round(np.log(1-p) / np.log(1-(1-eps)**s)) 
     # N = 1000 if N > 1000 else N
-    N = 5000
+    N = 3000
     plane = ransac_plane_fit(remaining_points, N, i) # run ransac
     # update the inlier to the global indices after removing
     local_points_indices = plane.inlier_indices.copy()
@@ -122,14 +122,13 @@ def handle_request(request, response):
   pointcloud_np = np.array(pointcloud.tolist())
   points_np = pointcloud_np[:, :3]
 
-  planes = seq_ransac(points_np, threshold = 2)
+  planes = seq_ransac(points_np, threshold=2)
 
   # add the calibrated base plane
   red_plane = Plane([-0.003401960104850783, 0.007624634496218392, -0.9999651452006935, 0.032146114540822605]) 
   planes.append(red_plane)
 
   export_planes(points_np, planes) 
-  ANGLE_THRESHOLD = 1.0
 
   # planes matching (combination 6C2)
   planes_pair = []
@@ -145,7 +144,8 @@ def handle_request(request, response):
   # yx = zip(angles, planes_pair)
   # ans = sorted(yx)
   # print(list(ans))
-  print(angles)
+  print(f"num of planes: {len(planes)}")
+  print(f"angles: {np.array(sorted(angles))}")
 
   # sort planes pair based on angles
   sorted_planes_pair = [x for _, x in sorted(zip(angles, planes_pair))]
@@ -188,7 +188,7 @@ def handle_request(request, response):
   l = corner_mean(sorted_corner_y)
   h = corner_mean(sorted_corner_z)
 
-  print(w, l, h)
+  print(f"w, l, h: {w} {l} {h} ")
 
   # Calculate the average point using NumPy
   response.corners = corners
